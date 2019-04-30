@@ -41,7 +41,7 @@ console.log(winder('2019-08-09|skip n year|find -1 day day==Saturday', 1))
 
 ## Example for codec and fields using dayjs
 
-```
+``` js
 const Winder = require('winder')
 const dayjs = require('dayjs')
 
