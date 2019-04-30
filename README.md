@@ -13,13 +13,13 @@ To specify a series of events, you combine skip and find statements.
 
 `skip count unit`
 
-Skip simply skips forward (or backward) a specified number of units. The number of units can either be a positive or negative integer, or the literal `+n` or `-n` (or `n`, which is the ame as `-n`)
+Skip simply skips forward (or backward) a specified number of units. The number of units can either be a positive or negative integer, or the literal `+n` or `-n` (or `n`, which is the ame as `+n`)
 
 The value for `n` can be specified at runtime and can be used to create a series.
 
 ## find
 
-`find count unit unit1==value1 unit2==value2
+`find count unit unit1==value1 unit2==value2...`
 
 `find` repeatedly calls `skip` until a set of conditions is met.
 
@@ -29,7 +29,7 @@ The value for `n` can be specified at runtime and can be used to create a series
 ```
 2019-08-09|skip n year|find -1 day day==Saturday
 ```
-Starting from 9th of August 2919, skip ahead N years and then find the previous Saturday.
+Starting from 9th of August 2019, skip ahead N years and then find the previous Saturday.
 
 # API
 
@@ -42,8 +42,7 @@ console.log(winder('2019-08-09|skip n year|find -1 day day==Saturday', 1))
 ## Example for codec and fields using dayjs
 
 ```
-const test = require('tape')
-const Winder = require('..')
+const Winder = require('winder')
 const dayjs = require('dayjs')
 
 function day() {
