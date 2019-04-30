@@ -33,7 +33,7 @@ Starting from 9th of August 2019, skip ahead N years and then find the previous 
 
 # API
 
-```
+``` js
 const Winder = require('winder')
 const winder = Winder(codec, fields)
 console.log(winder('2019-08-09|skip n year|find -1 day day==Saturday', 1))
