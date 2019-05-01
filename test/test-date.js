@@ -1,6 +1,7 @@
 const test = require('tape')
 const Winder = require('..')
 const dayjs = require('dayjs')
+const pull = require('pull-stream')
 
 function day() {
   return {
@@ -37,13 +38,27 @@ const winder = Winder(
 )
 
 test('One week before on Sunday', t=>{
-  const result = winder('2019-08-09|skip -1 week|find -1 day day==0')
-  t.equal(result, 'Su 2019-07-28')
-  t.end()
+  pull(
+    winder('2019-08-09|skip -1 week|find -1 day day==0'),
+    pull.collect((err, result) => {
+      t.error(err)
+      t.equal(result.length, 1)
+      t.equal(result[0], 'Su 2019-07-28')
+      t.end()
+    })
+  )
 })
 
 test('6 years later and one week before on Sunday', t=>{
-  const result = winder('2019-08-09|skip n year|skip -1 week|find -1 day day==0', 6)
-  t.equal(result, 'Su 2025-07-27')
-  t.end()
+  pull(
+    winder('2019-08-09|skip n year|skip -1 week|find -1 day day==0'),
+    pull.through(console.log),
+    pull.take(7),
+    pull.collect((err, result)=>{
+      t.error(err)
+      t.equal(result.length, 7)
+      t.equal(result[6], 'Su 2025-07-27')
+      t.end()
+    })
+  )
 })

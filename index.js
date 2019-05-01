@@ -1,4 +1,5 @@
 const parse = require('./parse')
+const debug = require('debug')('winder')
 
 function defineType(codec, fields) {
   const self = {
@@ -13,21 +14,21 @@ function defineType(codec, fields) {
     checkConditions: (item, conditions)=>{
       for(let {unit, value} of conditions) {
         const curVal = fields[unit]().get(item) 
-        console.log(unit, 'must be', value, 'is', curVal)
+        debug(`${unit} must be ${value} is ${curVal}`)
         if (String(curVal) !== String(value)) return false
       }
-      console.log('ok!')
+      debug('ok!')
       return true
     },
     skip: (item, count, unit) => {
-      console.log('skip', count, unit)
+      debug(`skip ${count} ${unit}`)
       const dir = count < 0 ? -1 : 1
       const f = fields[unit]()[count < 0 ? 'dec' : 'inc']
       count = Math.floor(Math.abs(count))
       for(let i=0; i<count; ++i) {
         item = f(item)
       }
-      console.log(codec.encode(item))
+      debug(codec.encode(item))
       return item
     }
   }
@@ -37,19 +38,27 @@ function defineType(codec, fields) {
 module.exports = function Winder(codec, fields) {
   const t = defineType(codec, fields)
 
-  return function parseAndRun(s, n) {
-    n = n == undefined ? 1 : n
+  return function source(s) {
     const sequence = parse(s)
-    let item = codec.decode(sequence.shift())
-    while(sequence.length) {
-      let {count, unit, conditions} = sequence.shift()
-      if (count == '+n') count = n
-      if (count == '-n') count = -n
+    let recurring = false
+    let ended
+    let n = 0
+    return function(end, cb) {
+      if (end) ended = end
+      if (ended) return cb && cb(ended)
+      if (n>0 && !recurring) return cb(true)
 
-      if (conditions) item = t.find(item, count, unit, conditions)
-      else item = t.skip(item, count, unit)
+      let item = codec.decode(sequence[0])
+      for(let {count, unit, conditions} of sequence.slice(1)) {
+        if (count == '+n') {count = n; recurring = true}
+        if (count == '-n') {count = -n; recurring = true}
+
+        if (conditions) item = t.find(item, count, unit, conditions)
+        else item = t.skip(item, count, unit)
+      }
+      n++
+      return cb(null, codec.encode(item))
     }
-    return codec.encode(item)
   }
 }
 

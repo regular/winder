@@ -1,10 +1,10 @@
 module.exports = function parse(s) {
   const segments = s.split('|')
-  console.log(segments)
+  //console.log(segments)
   return segments.map( (x,i) => {
     if (i == 0) return x
     // skip n unit
-    console.log(x)
+    //console.log(x)
     const skip = x.match(/^skip\s+([+-]?)([0-9]+|n)\s+(\w+)$/)
     if (skip) {
       const [_, direction, count, unit] = skip

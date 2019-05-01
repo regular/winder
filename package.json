@@ -10,9 +10,11 @@
   "author": "Jan Bölsche <jan@lagomorph.de> (https://regular.codes/)",
   "license": "ISC",
   "devDependencies": {
+    "pull-stream": "^3.6.9",
     "tape": "^4.10.1"
   },
   "dependencies": {
-    "dayjs": "^1.8.13"
+    "dayjs": "^1.8.13",
+    "debug": "^4.1.1"
   }
 }
