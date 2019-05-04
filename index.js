@@ -31,6 +31,11 @@ function defineType(codec, compare, fields) {
       }
       debug(codec.encode(item))
       return item
+    },
+    set: (item, unit, value) => {
+      debug(`set ${unit} to "${value}"`)
+      const f = fields[unit]().set || (x=>{})
+      return f(item, value)
     }
   }
   return self
@@ -47,7 +52,7 @@ module.exports = function Winder(codec, compare, fields) {
   }
 
   function source(s, range) {
-    console.log('range', range)
+    //console.log('range', range)
     const sequence = parse(s)
     let recurring = false
     let ended
@@ -62,12 +67,17 @@ module.exports = function Winder(codec, compare, fields) {
       let item
       while(true) {
         item = startItem
-        for(let {count, unit, conditions} of sequence.slice(1)) {
-          if (count == '+n') {count = n; recurring = true}
-          if (count == '-n') {count = -n; recurring = true}
+        for(let {count, unit, conditions, value} of sequence.slice(1)) {
+          if (value) {
+            value = value.replace(/%n/g, n)
+            t.set(item, unit, value)
+          } else {
+            if (count == '+n') {count = n; recurring = true}
+            if (count == '-n') {count = -n; recurring = true}
 
-          if (conditions) item = t.find(item, count, unit, conditions)
-          else item = t.skip(item, count, unit)
+            if (conditions) item = t.find(item, count, unit, conditions)
+            else item = t.skip(item, count, unit)
+          }
         }
         debug('n', n)
         n += range.reverse ? -1 : 1

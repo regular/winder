@@ -5,6 +5,13 @@ module.exports = function parse(s) {
     if (i == 0) return x
     // skip n unit
     //console.log(x)
+    const set = x.match(/^set\s+(\w+)\s+(.*)$/)
+    if (set) {
+      const [_, unit, value] = set
+      return {
+        unit, value
+      }
+    }
     const skip = x.match(/^skip\s+([+-]?)([0-9]+|n)\s+(\w+)$/)
     if (skip) {
       const [_, direction, count, unit] = skip

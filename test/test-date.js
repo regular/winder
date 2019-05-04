@@ -3,6 +3,13 @@ const Winder = require('..')
 const dayjs = require('dayjs')
 const pull = require('pull-stream')
 
+function name() {
+  return {
+    get: date => date.name,
+    set: (date, x) => date.name = x
+  }
+}
+
 function day() {
   return {
     get: date => date.day(),
@@ -32,6 +39,15 @@ const codec = {
   encode: x => x.format('dd YYYY-MM-DD')
 }
 
+const codec_obj= {
+  decode: x => dayjs(x, 'YYYY-MM-DD'),
+  encode: x => {
+    const date = x.format('dd YYYY-MM-DD')
+    const name = x.name
+    return {date, name}
+  }
+}
+
 function compare(a,b) {
   if (a.isBefore(b)) return -1
   if (a.isAfter(b)) return 1
@@ -41,7 +57,7 @@ function compare(a,b) {
 const winder = Winder(
   codec,
   compare,
-  {day, week, year}
+  {name, day, week, year}
 )
 
 test('One week before on Sunday', t=>{
@@ -51,6 +67,43 @@ test('One week before on Sunday', t=>{
       t.error(err)
       t.equal(result.length, 1)
       t.equal(result[0], 'Su 2019-07-28')
+      t.end()
+    })
+  )
+})
+
+test('set', t=>{
+  const winder = Winder(
+    codec_obj,
+    compare,
+    {name, day, week, year}
+  )
+  pull(
+    winder('2019-08-09|skip -1 week|find -1 day day==0|set name Buy Gifts!'),
+    pull.collect((err, result) => {
+      t.error(err)
+      t.equal(result.length, 1)
+      t.equal(result[0].date, 'Su 2019-07-28')
+      t.equal(result[0].name, 'Buy Gifts!')
+      t.end()
+    })
+  )
+})
+
+test('set, value containing %n', t=>{
+  const winder = Winder(
+    codec_obj,
+    compare,
+    {name, day, week, year}
+  )
+  pull(
+    winder('2019-08-09|skip n year|skip -1 week|find -1 day day==1|set name Buy Gifts for %nth birthday'),
+    pull.take(6),
+    pull.collect((err, result) => {
+      t.error(err)
+      t.equal(result.length, 6)
+      t.equal(result[5].date, 'Mo 2024-07-29')
+      t.equal(result[5].name, 'Buy Gifts for 5th birthday')
       t.end()
     })
   )
